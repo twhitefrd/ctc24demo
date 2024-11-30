@@ -4,16 +4,23 @@ from datetime import datetime
 import streamlit_authenticator as stauth
 
 # Retrieve secrets for authentication
-auth_username = st.secrets["auth"]["username"]
-auth_password = st.secrets["auth"]["password"]
+try:
+    auth_username = st.secrets["auth"]["username"]
+    auth_password = st.secrets["auth"]["password"]
+except KeyError:
+    st.error("Authentication secrets not found. Make sure to define them in secrets.toml or Streamlit Cloud settings.")
+    st.stop()
 
-# Authentication Setup
+# Generate hashed password
+hashed_password = stauth.Hasher([auth_password]).hashes[0]
+
+# Authentication Configuration
 auth_config = {
     "credentials": {
         "usernames": {
             auth_username: {
                 "name": "Trivia Host",
-                "password": stauth.Hasher([auth_password]).generate()[0],
+                "password": hashed_password,
             }
         }
     },
